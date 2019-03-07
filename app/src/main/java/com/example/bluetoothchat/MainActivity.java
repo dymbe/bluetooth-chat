@@ -13,12 +13,18 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.ViewFlipper;
+
+import java.lang.reflect.Member;
 
 public class MainActivity extends AppCompatActivity {
 
     private enum Screen {
         MAIN,
+        CHAT,
         DENIED_PERMISSION
     }
     private static final String[] PERMISSIONS = new String[]{
@@ -27,7 +33,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 0;
 
     private ViewFlipper viewFlipper;
-    private Button allowLocationBtn;
+    private EditText editText;
+    private ImageButton sendBtn;
+
+    private MessageAdapter messageAdapter;
+    private ListView messagesView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +47,43 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         viewFlipper = findViewById(R.id.view_flipper);
-        allowLocationBtn = findViewById(R.id.allow_location);
+        editText = findViewById(R.id.editText);
 
+        sendBtn = findViewById(R.id.send_btn);
+        sendBtn.setOnClickListener(this::sendMessage);
+
+        messageAdapter = new MessageAdapter(this);
+        messagesView = findViewById(R.id.messages_view);
+        messagesView.setAdapter(messageAdapter);
+
+        Button allowLocationBtn = findViewById(R.id.allow_location);
         allowLocationBtn.setOnClickListener(this::allowLocation);
-        requestPermissions(PERMISSIONS, REQUEST_CODE);
+
+        //requestPermissions(PERMISSIONS, REQUEST_CODE);
+        selectScreen(Screen.CHAT);
+    }
+
+    public void onMessage(final String msg) {
+        // since the message body is a simple string in our case we can use json.asText() to parse it as such
+        // if it was instead an object we could use a similar pattern to data parsing
+        final Message message = new Message(msg, new MemberData("Fremmed jævel", "#FF0000"), false);
+        runOnUiThread(() -> {
+            messageAdapter.add(message);
+            // scroll the ListView to the last added element
+            messagesView.setSelection(messagesView.getCount() - 1);
+        });
+    }
+
+
+
+    public void sendMessage(View view) {
+        String message = editText.getText().toString();
+        if (message.length() > 0) {
+
+            onMessage(message);
+
+            editText.getText().clear();
+        }
     }
 
     private void allowLocation(View v) {
@@ -75,21 +118,24 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE: {
                 if (grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    switchView(Screen.MAIN);
+                    selectScreen(Screen.CHAT);
                 } else {
-                    switchView(Screen.DENIED_PERMISSION);
+                    selectScreen(Screen.DENIED_PERMISSION);
                 }
             }
         }
     }
 
-    private void switchView(Screen screen) {
+    private void selectScreen(Screen screen) {
         switch (screen) {
             case MAIN:
                 viewFlipper.setDisplayedChild(0);
                 break;
-            case DENIED_PERMISSION:
+            case CHAT:
                 viewFlipper.setDisplayedChild(1);
+                break;
+            case DENIED_PERMISSION:
+                viewFlipper.setDisplayedChild(2);
                 break;
         }
     }
