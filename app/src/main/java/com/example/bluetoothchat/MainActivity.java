@@ -12,13 +12,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ViewFlipper;
 
 public class MainActivity extends AppCompatActivity {
 
+    private enum Screen {
+        MAIN,
+        DENIED_PERMISSION
+    }
     private static final String[] PERMISSIONS = new String[]{
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
     private static final int REQUEST_CODE = 0;
+
+    private ViewFlipper viewFlipper;
+    private Button allowLocationBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +35,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        viewFlipper = findViewById(R.id.view_flipper);
+        allowLocationBtn = findViewById(R.id.allow_location);
+
+        allowLocationBtn.setOnClickListener(this::allowLocation);
+        requestPermissions(PERMISSIONS, REQUEST_CODE);
+    }
+
+    private void allowLocation(View v) {
         requestPermissions(PERMISSIONS, REQUEST_CODE);
     }
 
@@ -43,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        // noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -57,9 +75,22 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_CODE: {
                 if (grantResults.length > 0 &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    System.out.println("Permission granted");
+                    switchView(Screen.MAIN);
+                } else {
+                    switchView(Screen.DENIED_PERMISSION);
                 }
             }
+        }
+    }
+
+    private void switchView(Screen screen) {
+        switch (screen) {
+            case MAIN:
+                viewFlipper.setDisplayedChild(0);
+                break;
+            case DENIED_PERMISSION:
+                viewFlipper.setDisplayedChild(1);
+                break;
         }
     }
 }
