@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,8 @@ import android.widget.ListView;
 import android.widget.ViewFlipper;
 
 import java.lang.reflect.Member;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,13 +66,13 @@ public class MainActivity extends AppCompatActivity {
         selectScreen(Screen.CHAT);
     }
 
-    public void onMessage(final String msg) {
+    public void onReceiveMessage(final String msg) {
         // since the message body is a simple string in our case we can use json.asText() to parse it as such
         // if it was instead an object we could use a similar pattern to data parsing
-        final Message message = new Message(msg, new MemberData("Fremmed jævel", "#FF0000"), false);
+        final Message message = new Message(msg, new MemberData("Someone else", "#FF0000"), false);
         runOnUiThread(() -> {
+            System.out.println("hello");
             messageAdapter.add(message);
-            // scroll the ListView to the last added element
             messagesView.setSelection(messagesView.getCount() - 1);
         });
     }
@@ -79,11 +82,24 @@ public class MainActivity extends AppCompatActivity {
     public void sendMessage(View view) {
         String message = editText.getText().toString();
         if (message.length() > 0) {
-
-            onMessage(message);
+            runOnUiThread(() -> {
+                System.out.println("hello");
+                messageAdapter.add(new Message(message, new MemberData("Me", "#00FF00"), true));
+                messagesView.setSelection(messagesView.getCount() - 1);
+            });
 
             editText.getText().clear();
         }
+
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        onReceiveMessage(message + "? What do you mean?");
+                    }
+                },
+                1000
+        );
     }
 
     private void allowLocation(View v) {
