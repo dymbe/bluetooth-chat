@@ -1,13 +1,9 @@
 package com.example.bluetoothchat;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Telephony;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -19,7 +15,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ViewFlipper;
 
-import java.lang.reflect.Member;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -62,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         Button allowLocationBtn = findViewById(R.id.allow_location);
         allowLocationBtn.setOnClickListener(this::allowLocation);
 
-        //requestPermissions(PERMISSIONS, REQUEST_CODE);
+        requestPermissions(PERMISSIONS, REQUEST_CODE);
         selectScreen(Screen.CHAT);
     }
 
@@ -71,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
         // if it was instead an object we could use a similar pattern to data parsing
         final Message message = new Message(msg, new MemberData("Someone else", "#FF0000"), false);
         runOnUiThread(() -> {
-            System.out.println("hello");
             messageAdapter.add(message);
             messagesView.setSelection(messagesView.getCount() - 1);
         });
